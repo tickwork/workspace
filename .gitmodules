@@ -10,6 +10,10 @@
 	path = tickwork-shell
 	url  = https://github.com/tickwork/tickwork-shell
 
+[submodule "tickwork-store"]
+	path = tickwork-store
+	url  = https://github.com/tickwork/tickwork-store
+
 [submodule "tickwork"]
 	path = tickwork
 	url  = https://github.com/tickwork/tickwork
