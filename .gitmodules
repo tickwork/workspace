@@ -1,0 +1,31 @@
+[submodule "tickwork-engine"]
+	path = tickwork-engine
+	url  = https://github.com/tickwork/tickwork-engine
+
+[submodule "tickwork-macros"]
+	path = tickwork-macros
+	url  = https://github.com/tickwork/tickwork-macros
+
+[submodule "tickwork-shell"]
+	path = tickwork-shell
+	url  = https://github.com/tickwork/tickwork-shell
+
+[submodule "tickwork"]
+	path = tickwork
+	url  = https://github.com/tickwork/tickwork
+
+[submodule "tickwork-inspector"]
+	path = tickwork-inspector
+	url  = https://github.com/tickwork/tickwork-inspector
+
+[submodule "holum"]
+	path = holum
+	url  = https://github.com/tickwork/holum
+
+[submodule "docs"]
+	path = docs
+	url  = https://github.com/tickwork/docs
+
+[submodule "www"]
+	path = www
+	url  = https://github.com/tickwork/www
