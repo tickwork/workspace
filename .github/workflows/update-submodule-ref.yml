@@ -11,6 +11,10 @@ on:
         description: Branch to update (main or dev)
         required: true
         type: string
+      sha:
+        description: Commit SHA to record for the submodule gitlink
+        required: true
+        type: string
     secrets:
       TW_WORKSPACE_CI_TOKEN:
         required: true
@@ -39,6 +43,7 @@ jobs:
         run: |
           SUBMODULE="${{ inputs.submodule }}"
           BRANCH="${{ inputs.branch }}"
+          NEW_SHA="${{ inputs.sha }}"
           MAX_ATTEMPTS=5
 
           for attempt in $(seq 1 $MAX_ATTEMPTS); do
@@ -46,22 +51,6 @@ jobs:
 
             git fetch origin "$BRANCH"
             git reset --hard "origin/$BRANCH"
-
-            # Resolve tracked branch from .gitmodules
-            TRACKED_BRANCH=$(git config --file .gitmodules "submodule.${SUBMODULE}.branch" 2>/dev/null || echo "$BRANCH")
-
-            # Get new SHA via GitHub API
-            API_RESPONSE=$(curl -sS \
-              -H "Authorization: Bearer ${TW_WORKSPACE_CI_TOKEN}" \
-              -H "Accept: application/vnd.github+json" \
-              "https://api.github.com/repos/tickwork/${SUBMODULE}/git/ref/heads/${TRACKED_BRANCH}")
-            NEW_SHA=$(echo "$API_RESPONSE" | jq -r '.object.sha // empty')
-
-            if [ -z "$NEW_SHA" ]; then
-              echo "Could not resolve SHA for ${SUBMODULE}@${TRACKED_BRANCH}" >&2
-              echo "API response: $API_RESPONSE" >&2
-              exit 1
-            fi
 
             # Get current recorded SHA for this submodule gitlink
             CURRENT_SHA=$(git ls-tree HEAD "$SUBMODULE" 2>/dev/null | awk '{print $3}')
