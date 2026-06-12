@@ -24,6 +24,11 @@ Ce dépôt est un **dépôt ombrelle Git** : il ne contient pas de code source d
 - Chaque submodule est un dépôt Git indépendant avec sa propre branche `main`.
 - Les commits dans un submodule ne remontent pas automatiquement dans l'ombrelle : après un commit dans un submodule, mettre à jour la référence dans l'ombrelle avec `git add <submodule>` + commit.
 
+## Flux de commit dans ce dépôt ombrelle
+
+- Pousser **directement** sur `main` ou `dev` selon la branche concernée — **sans PR**.
+- Les PRs sont réservées aux submodules (code), pas à l'ombrelle (refs).
+
 ## Branches et flux de promotion
 
 Ce dépôt maintient deux branches parallèles qui ne se mergent **jamais** l'une dans l'autre :
