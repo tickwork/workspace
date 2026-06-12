@@ -1,11 +1,8 @@
-name: Sync shared files between main and dev
+name: Sync files between main and dev
 
 on:
   push:
     branches: [main, dev]
-    paths:
-      - 'scripts/switch.sh'
-      - 'CLAUDE.md'
 
 jobs:
   sync:
@@ -40,13 +37,36 @@ jobs:
           git fetch origin "$TARGET"
           git checkout "$TARGET"
 
-          # Copy shared files from source branch
-          git checkout "origin/$SOURCE" -- scripts/switch.sh CLAUDE.md
+          # Read submodule paths dynamically to exclude gitlinks
+          SUBMODULE_PATHS=$(git config --file .gitmodules --get-regexp 'submodule\..*\.path' 2>/dev/null | awk '{print $2}' || true)
 
-          if git diff --cached --quiet; then
-            echo "No changes to sync."
+          # Find files changed on source vs target
+          CHANGED=$(git diff --name-only "origin/$TARGET" "origin/$SOURCE")
+
+          FILES_TO_SYNC=()
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            # Exclude .gitmodules and submodule root paths
+            SKIP=false
+            [[ "$f" == ".gitmodules" ]] && SKIP=true
+            for sub in $SUBMODULE_PATHS; do
+              [[ "$f" == "$sub" || "$f" == "$sub/"* ]] && SKIP=true && break
+            done
+            [[ "$SKIP" == "false" ]] && FILES_TO_SYNC+=("$f")
+          done <<< "$CHANGED"
+
+          if [ ${#FILES_TO_SYNC[@]} -eq 0 ]; then
+            echo "No files to sync."
             exit 0
           fi
 
-          git commit -m "chore: sync shared files from $SOURCE [skip-sync]"
+          echo "Syncing: ${FILES_TO_SYNC[*]}"
+          git checkout "origin/$SOURCE" -- "${FILES_TO_SYNC[@]}"
+
+          if git diff --cached --quiet; then
+            echo "No changes after filtering."
+            exit 0
+          fi
+
+          git commit -m "chore: sync files from $SOURCE [skip-sync]"
           git push origin "$TARGET"
