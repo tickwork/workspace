@@ -28,6 +28,7 @@ Ce dépôt est un **dépôt ombrelle Git** : il ne contient pas de code source d
 
 - Pousser **directement** sur `main` ou `dev` selon la branche concernée — **sans PR**.
 - Les PRs sont réservées aux submodules (code), pas à l'ombrelle (refs).
+- Toute modification de `CLAUDE.md` doit être **répercutée immédiatement** sur l'autre branche (`main` ↔ `dev`) pour garder les instructions synchronisées.
 
 ## Branches et flux de promotion
 
