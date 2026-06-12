@@ -33,3 +33,6 @@
 [submodule "www"]
 	path = www
 	url  = https://github.com/tickwork/www
+[submodule "tickwork-demo"]
+	path = tickwork-demo
+	url = https://github.com/tickwork/tickwork-demo
