@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.WORKSPACE_PUSH_TOKEN }}
+          token: ${{ secrets.TW_WORKSPACE_CI_TOKEN }}
 
       - name: Configure git
         run: |

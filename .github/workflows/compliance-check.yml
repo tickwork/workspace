@@ -14,7 +14,7 @@ jobs:
       - name: Check compliance and report
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.WORKSPACE_PUSH_TOKEN }}
+          github-token: ${{ secrets.TW_WORKSPACE_CI_TOKEN }}
           script: |
             const fs = require('fs');
 
@@ -55,18 +55,18 @@ jobs:
                 continue;
               }
 
-              // Check for WORKSPACE_DISPATCH_TOKEN secret
+              // Check for TW_WORKSPACE_CI_TOKEN secret
               try {
                 await github.rest.actions.getRepoSecret({
                   owner: 'tickwork',
                   repo: repo.name,
-                  secret_name: 'WORKSPACE_DISPATCH_TOKEN',
+                  secret_name: 'TW_WORKSPACE_CI_TOKEN',
                 });
               } catch (e) {
                 if (e.status === 403) {
-                  violations.push(`**${repo.name}**: impossible de vérifier \`WORKSPACE_DISPATCH_TOKEN\` (accès refusé)`);
+                  violations.push(`**${repo.name}**: impossible de vérifier \`TW_WORKSPACE_CI_TOKEN\` (accès refusé)`);
                 } else if (e.status === 404) {
-                  violations.push(`**${repo.name}**: secret \`WORKSPACE_DISPATCH_TOKEN\` manquant`);
+                  violations.push(`**${repo.name}**: secret \`TW_WORKSPACE_CI_TOKEN\` manquant`);
                 }
               }
             }
@@ -98,7 +98,7 @@ jobs:
               '',
               `_Rapport généré le ${new Date().toISOString()}_`,
               '',
-              '**Actions attendues :** ajouter le fichier `notify-workspace.yml` et/ou le secret `WORKSPACE_DISPATCH_TOKEN` dans chaque repo listé.',
+              '**Actions attendues :** ajouter le fichier `notify-workspace.yml` et/ou le secret `TW_WORKSPACE_CI_TOKEN` dans chaque repo listé.',
               '',
               'Pour exclure un repo définitivement, ajoutez son nom dans `.github/workspace-exclusions.txt`.',
             ].join('\n');
