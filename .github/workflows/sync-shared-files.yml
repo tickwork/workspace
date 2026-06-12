@@ -1,0 +1,52 @@
+name: Sync shared files between main and dev
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'scripts/switch.sh'
+      - 'CLAUDE.md'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Avoid infinite loop: skip commits produced by this workflow
+    if: "!contains(github.event.head_commit.message, '[skip-sync]')"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.WORKSPACE_PUSH_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determine target branch
+        id: target
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "branch=dev" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync files to target branch
+        run: |
+          SOURCE="${{ github.ref_name }}"
+          TARGET="${{ steps.target.outputs.branch }}"
+
+          git fetch origin "$TARGET"
+          git checkout "$TARGET"
+
+          # Copy shared files from source branch
+          git checkout "origin/$SOURCE" -- scripts/switch.sh CLAUDE.md
+
+          if git diff --cached --quiet; then
+            echo "No changes to sync."
+            exit 0
+          fi
+
+          git commit -m "chore: sync shared files from $SOURCE [skip-sync]"
+          git push origin "$TARGET"
