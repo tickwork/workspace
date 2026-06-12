@@ -23,6 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: tickwork/workspace
           ref: ${{ inputs.branch }}
           token: ${{ secrets.TW_WORKSPACE_CI_TOKEN }}
           submodules: false
