@@ -7,8 +7,8 @@ if [[ "$TARGET" != "main" && "$TARGET" != "dev" ]]; then
   exit 1
 fi
 
-# Guard: refuse if working tree is dirty
-if ! git diff --quiet || ! git diff --cached --quiet; then
+# Guard: refuse if working tree is dirty (submodule gitlink divergence is ignored)
+if ! git diff --ignore-submodules=all --quiet || ! git diff --cached --ignore-submodules=all --quiet; then
   echo "Erreur : modifications non commitées. Commitez ou stashez avant de basculer." >&2
   exit 1
 fi
