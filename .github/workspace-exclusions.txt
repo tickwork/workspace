@@ -2,3 +2,4 @@
 # One repo name per line (without organization prefix)
 # These repos are not tracked as submodules in workspace.
 test
+scripts

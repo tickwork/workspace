@@ -32,8 +32,9 @@ tickwork-demo      (démo standalone)
 | [`tickwork-inspector`](https://github.com/tickwork/tickwork-inspector) | CLI d'inspection et réparation de sauvegardes |
 | [`tickwork-demo`](https://github.com/tickwork/tickwork-demo) | Démo standalone |
 | [`holum`](https://github.com/tickwork/holum) | Premier jeu basé sur Tickwork |
-| [`docs`](https://github.com/tickwork/docs) | Cahier des charges, CHANGELOG |
+| [`docs`](https://github.com/tickwork/docs) | Cahier des charges, CHANGELOG, CLAUDE.md |
 | [`www`](https://github.com/tickwork/www) | Site web tickwork.dev |
+| [`scripts`](https://github.com/tickwork/scripts) | Scripts utilitaires (pull, switch de branche) |
 
 ## Branches
 
@@ -60,14 +61,14 @@ git submodule update --init --recursive
 
 ## Scripts
 
-Tous les scripts sont dans `scripts/`. Les exécuter depuis la **racine** de `workspace`.
+Les scripts sont dans le submodule `scripts/` (dépôt [`tickwork/scripts`](https://github.com/tickwork/scripts)). Les exécuter depuis la **racine** de `workspace`.
 
-| Script | Disponible sur | Rôle |
-|--------|---------------|------|
-| `scripts/pull.sh` | `main` et `dev` | `git pull` + `git submodule update` en une commande |
-| `scripts/switch.sh <main\|dev>` | `main` et `dev` | Bascule de branche avec pull et mise à jour des submodules |
-| `scripts/to-dev.sh` | `main` | Raccourci vers `switch.sh dev` |
-| `scripts/to-main.sh` | `dev` | Raccourci vers `switch.sh main` |
+| Script | Rôle |
+|--------|------|
+| `scripts/pull.sh` | `git pull` + `git submodule update` en une commande |
+| `scripts/switch.sh <main\|dev>` | Bascule de branche avec pull et mise à jour des submodules |
+| `scripts/to-dev.sh` | Raccourci vers `switch.sh dev` |
+| `scripts/to-main.sh` | Raccourci vers `switch.sh main` |
 
 ### Utilisation typique
 
@@ -82,20 +83,11 @@ Tous les scripts sont dans `scripts/`. Les exécuter depuis la **racine** de `wo
 ./scripts/to-main.sh
 ```
 
+## CLAUDE.md
+
+`CLAUDE.md` à la racine est un symlink vers `docs/CLAUDE.md`. Le contenu autoritaire vit dans le submodule `docs`.
+
 ## Workflows CI
-
-Tous les workflows sont définis dans `workspace` et s'appliquent à l'ensemble du projet.
-
-### `sync-shared-files.yml` — synchronisation entre branches
-
-Déclenché par tout push sur `main` ou `dev`.
-
-Copie automatiquement vers l'autre branche tous les fichiers modifiés, **sauf** :
-- `.gitmodules` (contenu intentionnellement différent entre les branches)
-- `scripts/to-main.sh` et `scripts/to-dev.sh` (scripts branch-specific)
-- Les répertoires de submodules (gitlinks)
-
-Cela garantit que `CLAUDE.md`, les workflows et les autres fichiers partagés restent synchronisés sans intervention manuelle.
 
 ### `update-submodule-ref.yml` — mise à jour automatique des gitlinks
 
@@ -111,7 +103,7 @@ Vérifie que chaque dépôt de l'organisation `tickwork` :
 1. Possède le fichier `.github/workflows/notify-workspace.yml`
 2. Possède le secret `TW_WORKSPACE_CI_TOKEN`
 
-En cas d'écart, crée (ou met à jour) une GitHub Issue dans `workspace` — ce qui déclenche une notification email. Les dépôts à exclure sont listés dans `.github/workspace-exclusions.txt`.
+En cas d'écart, crée (ou met à jour) une GitHub Issue dans `workspace`. Les dépôts à exclure sont listés dans `.github/workspace-exclusions.txt`.
 
 ## Secrets requis
 
@@ -127,7 +119,6 @@ Un seul PAT (scope `repo`) suffit, configuré sous le même nom dans tous les d�
 - Pusher **directement** sur `main` ou `dev` dans ce dépôt ombrelle — pas de PR.
 - Les PRs sont réservées aux submodules (code Rust).
 - Ne jamais proposer de PR `dev → main` dans cet ombrelle.
-- Toute modification de `CLAUDE.md` est automatiquement synchronisée sur l'autre branche par la CI.
 
 ## Stack technique
 

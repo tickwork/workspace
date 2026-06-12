@@ -47,3 +47,8 @@
 	path = tickwork-demo
 	url = https://github.com/tickwork/tickwork-demo
 	ignore = dirty
+
+[submodule "scripts"]
+	path = scripts
+	url  = https://github.com/tickwork/scripts
+	ignore = dirty
