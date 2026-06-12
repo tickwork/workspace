@@ -1,0 +1,131 @@
+name: Workspace compliance check
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'  # Every Monday at 08:00 UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check compliance and report
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.WORKSPACE_PUSH_TOKEN }}
+          script: |
+            const fs = require('fs');
+
+            // Load exclusion list
+            let exclusions = ['workspace'];
+            try {
+              const raw = fs.readFileSync('.github/workspace-exclusions.txt', 'utf8');
+              const extra = raw.split('\n')
+                .map(l => l.trim())
+                .filter(l => l && !l.startsWith('#'));
+              exclusions = [...new Set([...exclusions, ...extra])];
+            } catch {}
+            console.log('Exclusions:', exclusions);
+
+            // List all org repos
+            const repos = await github.paginate(github.rest.repos.listForOrg, {
+              org: 'tickwork',
+              per_page: 100,
+            });
+
+            const violations = [];
+
+            for (const repo of repos) {
+              if (exclusions.includes(repo.name)) {
+                console.log(`Skipping excluded repo: ${repo.name}`);
+                continue;
+              }
+
+              // Check for notify-workspace.yml
+              try {
+                await github.rest.repos.getContent({
+                  owner: 'tickwork',
+                  repo: repo.name,
+                  path: '.github/workflows/notify-workspace.yml',
+                });
+              } catch (e) {
+                violations.push(`**${repo.name}**: fichier \`.github/workflows/notify-workspace.yml\` manquant`);
+                continue;
+              }
+
+              // Check for WORKSPACE_DISPATCH_TOKEN secret
+              try {
+                await github.rest.actions.getRepoSecret({
+                  owner: 'tickwork',
+                  repo: repo.name,
+                  secret_name: 'WORKSPACE_DISPATCH_TOKEN',
+                });
+              } catch (e) {
+                if (e.status === 403) {
+                  violations.push(`**${repo.name}**: impossible de vérifier \`WORKSPACE_DISPATCH_TOKEN\` (accès refusé)`);
+                } else if (e.status === 404) {
+                  violations.push(`**${repo.name}**: secret \`WORKSPACE_DISPATCH_TOKEN\` manquant`);
+                }
+              }
+            }
+
+            if (violations.length === 0) {
+              console.log('All repositories are compliant.');
+              // Close any existing open compliance issue
+              const issues = await github.rest.issues.listForRepo({
+                owner: 'tickwork',
+                repo: 'workspace',
+                state: 'open',
+                labels: 'compliance',
+              });
+              for (const issue of issues.data) {
+                await github.rest.issues.update({
+                  owner: 'tickwork',
+                  repo: 'workspace',
+                  issue_number: issue.number,
+                  state: 'closed',
+                  body: issue.body + '\n\n✅ Résolu automatiquement le ' + new Date().toISOString(),
+                });
+              }
+              return;
+            }
+
+            const body = [
+              '## ⚠️ Repositories non-conformes\n',
+              ...violations.map(v => `- ${v}`),
+              '',
+              `_Rapport généré le ${new Date().toISOString()}_`,
+              '',
+              '**Actions attendues :** ajouter le fichier `notify-workspace.yml` et/ou le secret `WORKSPACE_DISPATCH_TOKEN` dans chaque repo listé.',
+              '',
+              'Pour exclure un repo définitivement, ajoutez son nom dans `.github/workspace-exclusions.txt`.',
+            ].join('\n');
+
+            const ISSUE_TITLE = '⚠️ Workspace compliance violations';
+
+            // Update existing open issue or create new one
+            const existing = await github.rest.issues.listForRepo({
+              owner: 'tickwork',
+              repo: 'workspace',
+              state: 'open',
+              labels: 'compliance',
+            });
+
+            if (existing.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner: 'tickwork',
+                repo: 'workspace',
+                issue_number: existing.data[0].number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: 'tickwork',
+                repo: 'workspace',
+                title: ISSUE_TITLE,
+                body,
+                labels: ['compliance'],
+              });
+            }

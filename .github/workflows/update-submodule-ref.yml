@@ -1,0 +1,70 @@
+name: Update submodule ref
+
+on:
+  workflow_call:
+    inputs:
+      submodule:
+        description: Submodule name (matches directory path in workspace)
+        required: true
+        type: string
+      branch:
+        description: Branch to update (main or dev)
+        required: true
+        type: string
+    secrets:
+      WORKSPACE_PUSH_TOKEN:
+        required: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          token: ${{ secrets.WORKSPACE_PUSH_TOKEN }}
+          submodules: false
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update submodule ref with retry
+        run: |
+          SUBMODULE="${{ inputs.submodule }}"
+          BRANCH="${{ inputs.branch }}"
+          MAX_ATTEMPTS=5
+
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $attempt/$MAX_ATTEMPTS"
+
+            # Reset to remote to avoid divergence
+            git fetch origin "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+
+            # Update the gitlink to submodule's current HEAD on tracked branch
+            git submodule update --remote "$SUBMODULE"
+
+            if git diff --quiet; then
+              echo "No change in $SUBMODULE ref, nothing to commit."
+              exit 0
+            fi
+
+            git add "$SUBMODULE"
+            git commit -m "chore: update $SUBMODULE ref [skip-sync]"
+
+            if git push origin "$BRANCH"; then
+              echo "Successfully updated $SUBMODULE on $BRANCH."
+              exit 0
+            fi
+
+            if [[ $attempt -lt $MAX_ATTEMPTS ]]; then
+              SLEEP=$((attempt * attempt))
+              echo "Push failed (race condition?), retrying in ${SLEEP}s..."
+              sleep $SLEEP
+            fi
+          done
+
+          echo "Failed to push after $MAX_ATTEMPTS attempts." >&2
+          exit 1
