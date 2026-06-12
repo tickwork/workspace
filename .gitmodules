@@ -2,46 +2,56 @@
 	path = tickwork-engine
 	url  = https://github.com/tickwork/tickwork-engine
 	branch = dev
+	ignore = dirty
 
 [submodule "tickwork-macros"]
 	path = tickwork-macros
 	url  = https://github.com/tickwork/tickwork-macros
 	branch = dev
+	ignore = dirty
 
 [submodule "tickwork-shell"]
 	path = tickwork-shell
 	url  = https://github.com/tickwork/tickwork-shell
 	branch = dev
+	ignore = dirty
 
 [submodule "tickwork-store"]
 	path = tickwork-store
 	url  = https://github.com/tickwork/tickwork-store
 	branch = dev
+	ignore = dirty
 
 [submodule "tickwork"]
 	path = tickwork
 	url  = https://github.com/tickwork/tickwork
 	branch = dev
+	ignore = dirty
 
 [submodule "tickwork-inspector"]
 	path = tickwork-inspector
 	url  = https://github.com/tickwork/tickwork-inspector
 	branch = dev
+	ignore = dirty
 
 [submodule "holum"]
 	path = holum
 	url  = https://github.com/tickwork/holum
 	branch = dev
+	ignore = dirty
 
 [submodule "docs"]
 	path = docs
 	url  = https://github.com/tickwork/docs
+	ignore = dirty
 
 [submodule "www"]
 	path = www
 	url  = https://github.com/tickwork/www
+	ignore = dirty
 
 [submodule "tickwork-demo"]
 	path = tickwork-demo
 	url = https://github.com/tickwork/tickwork-demo
 	branch = dev
+	ignore = dirty
