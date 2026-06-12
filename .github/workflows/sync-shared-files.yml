@@ -7,6 +7,8 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     # Avoid infinite loop: skip commits produced by this workflow
     if: "!contains(github.event.head_commit.message, '[skip-sync]')"
     steps:
