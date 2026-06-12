@@ -1,38 +1,49 @@
 [submodule "tickwork-engine"]
 	path = tickwork-engine
 	url  = https://github.com/tickwork/tickwork-engine
+	ignore = dirty
 
 [submodule "tickwork-macros"]
 	path = tickwork-macros
 	url  = https://github.com/tickwork/tickwork-macros
+	ignore = dirty
 
 [submodule "tickwork-shell"]
 	path = tickwork-shell
 	url  = https://github.com/tickwork/tickwork-shell
+	ignore = dirty
 
 [submodule "tickwork-store"]
 	path = tickwork-store
 	url  = https://github.com/tickwork/tickwork-store
+	ignore = dirty
 
 [submodule "tickwork"]
 	path = tickwork
 	url  = https://github.com/tickwork/tickwork
+	ignore = dirty
 
 [submodule "tickwork-inspector"]
 	path = tickwork-inspector
 	url  = https://github.com/tickwork/tickwork-inspector
+	ignore = dirty
 
 [submodule "holum"]
 	path = holum
 	url  = https://github.com/tickwork/holum
+	ignore = dirty
 
 [submodule "docs"]
 	path = docs
 	url  = https://github.com/tickwork/docs
+	ignore = dirty
 
 [submodule "www"]
 	path = www
 	url  = https://github.com/tickwork/www
+	ignore = dirty
+
 [submodule "tickwork-demo"]
 	path = tickwork-demo
 	url = https://github.com/tickwork/tickwork-demo
+	ignore = dirty
