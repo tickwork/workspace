@@ -31,27 +31,46 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Update submodule ref with retry
+        env:
+          TW_WORKSPACE_CI_TOKEN: ${{ secrets.TW_WORKSPACE_CI_TOKEN }}
         run: |
           SUBMODULE="${{ inputs.submodule }}"
           BRANCH="${{ inputs.branch }}"
           MAX_ATTEMPTS=5
 
+          # Authenticate git for ls-remote on private submodule repos
+          git config --global \
+            url."https://x-access-token:${TW_WORKSPACE_CI_TOKEN}@github.com/".insteadOf \
+            "https://github.com/"
+
           for attempt in $(seq 1 $MAX_ATTEMPTS); do
             echo "Attempt $attempt/$MAX_ATTEMPTS"
 
-            # Reset to remote to avoid divergence
             git fetch origin "$BRANCH"
             git reset --hard "origin/$BRANCH"
 
-            # Update the gitlink to submodule's current HEAD on tracked branch
-            git submodule update --remote "$SUBMODULE"
+            # Resolve submodule URL and tracked branch from .gitmodules
+            SUBMODULE_URL=$(git config --file .gitmodules "submodule.${SUBMODULE}.url")
+            TRACKED_BRANCH=$(git config --file .gitmodules "submodule.${SUBMODULE}.branch" 2>/dev/null || echo "$BRANCH")
 
-            if git diff --quiet; then
-              echo "No change in $SUBMODULE ref, nothing to commit."
+            # Get new SHA via ls-remote (no clone needed)
+            NEW_SHA=$(git ls-remote "$SUBMODULE_URL" "refs/heads/${TRACKED_BRANCH}" | cut -f1)
+
+            if [ -z "$NEW_SHA" ]; then
+              echo "Could not resolve SHA for ${SUBMODULE}@${TRACKED_BRANCH}" >&2
+              exit 1
+            fi
+
+            # Get current recorded SHA for this submodule gitlink
+            CURRENT_SHA=$(git ls-tree HEAD "$SUBMODULE" 2>/dev/null | awk '{print $3}')
+
+            if [ "$CURRENT_SHA" = "$NEW_SHA" ]; then
+              echo "No change in $SUBMODULE ref ($NEW_SHA), nothing to commit."
               exit 0
             fi
 
-            git add "$SUBMODULE"
+            echo "Updating $SUBMODULE: $CURRENT_SHA -> $NEW_SHA"
+            git update-index --cacheinfo "160000,${NEW_SHA},${SUBMODULE}"
             git commit -m "chore: update $SUBMODULE ref [skip-sync]"
 
             if git push origin "$BRANCH"; then
