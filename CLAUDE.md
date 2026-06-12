@@ -24,6 +24,15 @@ Ce dépôt est un **dépôt ombrelle Git** : il ne contient pas de code source d
 - Chaque submodule est un dépôt Git indépendant avec sa propre branche `main`.
 - Les commits dans un submodule ne remontent pas automatiquement dans l'ombrelle : après un commit dans un submodule, mettre à jour la référence dans l'ombrelle avec `git add <submodule>` + commit.
 
+## Branches et flux de promotion
+
+Ce dépôt maintient deux branches parallèles qui ne se mergent **jamais** l'une dans l'autre :
+
+- **`main`** — refs stables ; les submodules de code pointent sur leur branche `main`.
+- **`dev`** — refs de développement ; les submodules de code pointent sur leur branche `dev` (déclaré dans `.gitmodules` via `branch = dev`).
+
+**Ne jamais proposer ni créer une PR `dev → main` dans ce dépôt ombrelle.** La promotion se fait submodule par submodule : PR `submodule/dev → submodule/main` dans chaque sous-dépôt, puis mise à jour de la ref dans `workspace/main` (`git submodule update --remote <submodule>` + commit sur `main`).
+
 ## Invariants d'architecture
 
 1. **`tickwork-engine` est headless** : aucune dépendance UI, aucun texte affiché. Pas d'import de `tickwork-shell`, `eframe` ou `egui` dans ce crate.

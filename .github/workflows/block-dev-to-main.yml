@@ -1,0 +1,29 @@
+name: Block dev→main
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened]
+
+jobs:
+  block:
+    if: github.head_ref == 'dev'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '🚫 Les PRs `dev → main` sont interdites dans le dépôt ombrelle.\n\nLa promotion se fait submodule par submodule : ouvrir une PR dans chaque sous-dépôt (`submodule/dev → submodule/main`), puis mettre à jour la ref dans `workspace/main`.'
+            });
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              state: 'closed'
+            });
