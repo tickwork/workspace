@@ -37,7 +37,7 @@ tickwork-inspector (outil CLI, indépendant)
 ## Cloner le projet complet
 
 ```sh
-git clone --recurse-submodules https://github.com/tickwork/tickwork
+git clone --recurse-submodules https://github.com/tickwork/workspace
 ```
 
 Ou, si le dépôt est déjà cloné sans submodules :
