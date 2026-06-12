@@ -41,23 +41,21 @@ jobs:
           BRANCH="${{ inputs.branch }}"
           MAX_ATTEMPTS=5
 
-          # Authenticate git for ls-remote on private submodule repos
-          git config --global \
-            url."https://x-access-token:${TW_WORKSPACE_CI_TOKEN}@github.com/".insteadOf \
-            "https://github.com/"
-
           for attempt in $(seq 1 $MAX_ATTEMPTS); do
             echo "Attempt $attempt/$MAX_ATTEMPTS"
 
             git fetch origin "$BRANCH"
             git reset --hard "origin/$BRANCH"
 
-            # Resolve submodule URL and tracked branch from .gitmodules
-            SUBMODULE_URL=$(git config --file .gitmodules "submodule.${SUBMODULE}.url")
+            # Resolve tracked branch from .gitmodules
             TRACKED_BRANCH=$(git config --file .gitmodules "submodule.${SUBMODULE}.branch" 2>/dev/null || echo "$BRANCH")
 
-            # Get new SHA via ls-remote (no clone needed)
-            NEW_SHA=$(git ls-remote "$SUBMODULE_URL" "refs/heads/${TRACKED_BRANCH}" | cut -f1)
+            # Get new SHA via GitHub API (avoids git auth config issues)
+            NEW_SHA=$(curl -sS \
+              -H "Authorization: Bearer ${TW_WORKSPACE_CI_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/tickwork/${SUBMODULE}/git/ref/heads/${TRACKED_BRANCH}" \
+              | jq -r '.object.sha // empty')
 
             if [ -z "$NEW_SHA" ]; then
               echo "Could not resolve SHA for ${SUBMODULE}@${TRACKED_BRANCH}" >&2
