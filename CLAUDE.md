@@ -1,8 +1,16 @@
 # CLAUDE.md — Tickwork (dépôt ombrelle)
 
+## Attention — trois homonymes
+
+- **`tickwork`** (organisation GitHub) — l'organisation qui héberge tous les repos.
+- **`tickwork`** (crate Rust, repo `tickwork/tickwork`) — la crate façade qui réexporte `tickwork-engine` et `tickwork-shell`.
+- **`workspace`** (ce repo, `tickwork/workspace`) — le dépôt ombrelle Git. Il ne s'appelle **pas** `tickwork`.
+
+Ne jamais confondre le nom de l'organisation avec le nom de ce dépôt.
+
 ## Nature de ce dépôt
 
-Ce dépôt est un **dépôt ombrelle Git** : il ne contient pas de code source directement, mais agrège les dépôts du projet via des submodules. Tout le code vit dans les submodules.
+Ce dépôt (`workspace`) est un **dépôt ombrelle Git** : il ne contient pas de code source directement, mais agrège les dépôts du projet via des submodules. Tout le code vit dans les submodules.
 
 ## Structure des submodules
 
