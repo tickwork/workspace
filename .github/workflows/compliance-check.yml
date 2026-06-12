@@ -22,6 +22,14 @@ jobs:
           script: |
             const fs = require('fs');
 
+            // Pin API version on all requests to avoid octokit deprecation warning
+            github.hook.wrap('request', (request, options) => {
+              return request({
+                ...options,
+                headers: { 'X-GitHub-Api-Version': '2022-11-28', ...options.headers },
+              });
+            });
+
             // Load exclusion list
             let exclusions = ['workspace'];
             try {
