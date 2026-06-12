@@ -42,18 +42,22 @@ jobs:
           # Read submodule paths dynamically to exclude gitlinks
           SUBMODULE_PATHS=$(git config --file .gitmodules --get-regexp 'submodule\..*\.path' 2>/dev/null | awk '{print $2}' || true)
 
-          # Find files changed on source vs target
+          # Find files changed on source vs target, keeping only those that exist on source
           CHANGED=$(git diff --name-only "origin/$TARGET" "origin/$SOURCE")
 
           FILES_TO_SYNC=()
           while IFS= read -r f; do
             [ -z "$f" ] && continue
-            # Exclude .gitmodules and submodule root paths
+            # Exclude .gitmodules, branch-specific scripts, and submodule root paths
             SKIP=false
             [[ "$f" == ".gitmodules" ]] && SKIP=true
+            [[ "$f" == "scripts/to-main.sh" ]] && SKIP=true
+            [[ "$f" == "scripts/to-dev.sh" ]] && SKIP=true
             for sub in $SUBMODULE_PATHS; do
               [[ "$f" == "$sub" || "$f" == "$sub/"* ]] && SKIP=true && break
             done
+            # Skip files that don't exist on source (deleted there, keep on target)
+            [[ "$SKIP" == "false" ]] && git cat-file -e "origin/$SOURCE:$f" 2>/dev/null || SKIP=true
             [[ "$SKIP" == "false" ]] && FILES_TO_SYNC+=("$f")
           done <<< "$CHANGED"
 
